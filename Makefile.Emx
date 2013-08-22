@@ -1,0 +1,35 @@
+CC = gcc
+CFLAGS = -s -O6 -mpentium
+LDFLAGS = -Zcrtdll
+
+all:	logger.exe syslogd.exe syslogdi.exe syslog.a syslog.lib
+
+clean:
+	del *.exe *.o *.a *.lib
+
+logger.exe: logger.o syslog.a
+	$(CC) $(LDFLAGS) -o $@ $< syslog.a -lsocket
+
+syslogd.exe: syslogd.o
+	$(CC) $(LDFLAGS) -o $@ $< -lsocket
+
+syslogdi.exe: syslogdi.o
+	$(CC) $(LDFLAGS) -o $@ $< -lsocket
+
+syslog.a: syslog.o
+	ar cr $@ $<
+
+syslog.lib: syslog.a
+	emxomf $<
+
+logger.o:   logger.c   syslog.h 
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+syslogd.o:  syslogd.c  syslog.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+syslogdi.o:  syslogd.c  syslog.h
+	$(CC) $(CFLAGS) -DSYSLOG_INET -o $@ -c $<
+
+syslog.o:   syslog.c   syslog.h
+	$(CC) $(CFLAGS) -D__ST_MT_ERRNO__ -o $@ -c $<
